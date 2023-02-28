@@ -1,4 +1,6 @@
 class Player:
+    BAG_SIZE = 4
+    UNIT_COUNT = 2
 
     def __init__(self, name):
         self._name = name
@@ -9,6 +11,7 @@ class Player:
         self._discarded_units = []
         self._control_tokens = 3
         self._units_on_board = set()
+        self._initiative = False
 
     @property
     def name(self):
@@ -73,6 +76,14 @@ class Player:
     @units_on_board.setter
     def units_on_board(self, value):
         self._units_on_board = value
+
+    @property
+    def initiative(self):
+        return self._initiative
+
+    @initiative.setter
+    def initiative(self, value):
+        self._initiative = value
 
     def __repr__(self):
         return f'======== {self.name.upper()} ========\n' \

@@ -3,7 +3,7 @@ from board import Board
 
 
 class Action:
-    UNIT_TYPES = ("Archer", "Berserker", "Cavalry", "Knight")
+    UNIT_TYPES = ("Knight", "Crossbowman", "Mercenary", "Archer")
 
     @staticmethod
     def place(player: Player, board: Board):
@@ -11,23 +11,17 @@ class Action:
             print('You can\'t place a unit as you do not have any control zones.')
             return
 
-        unit = input('Which unit from your hand would you like to place? ')
-        while unit not in Action.UNIT_TYPES or unit not in player.hand:
-            unit = input('Invalid unit. Which unit from your hand would you like to place? ')
-
+        unit = Action.__prompt_user_for_unit_name('Which unit from your hand would you like to place? ', player)
         row, col = list(map(int, input(f'Where would you like to place {unit} (row,col)? ').split(',')))
         # ToDo: check if position is valid (Orthogonally adjacent to control zone and in bounds)
 
         player.hand.remove(unit)
-        board.board[row][col] = unit[0]
+        board.board[row][col] = unit[:2]
         player.units_on_board.add(unit)
 
     @staticmethod
     def control(player: Player, opponent: Player, board: Board):
-        unit = input('Which unit from your hand would you like to discard? ')
-        while unit not in Action.UNIT_TYPES or unit not in player.hand:
-            unit = input('Invalid unit. Which unit from your hand would you like to discard? ')
-
+        unit = Action.__prompt_user_for_unit_name('Which unit from your hand would you like to discard? ', player)
         row, col = list(map(int, input(f'Which position would you like {unit} to control (row,col)? ').split(',')))
         # ToDo: check if position is valid (Orthogonally adjacent to control zone and in bounds, unit specific)
 
@@ -45,25 +39,26 @@ class Action:
 
     @staticmethod
     def move(player: Player, board: Board):
-        unit = input('Which unit from your hand and on the board would you like to move? ')
-        while unit not in Action.UNIT_TYPES or unit not in player.hand \
-                or unit not in player.units_on_board:
-            unit = input('Invalid unit. Which unit from your hand and on the board would you like to move? ')
+        unit = Action.__prompt_user_for_unit_name(
+            'Which unit from your hand and on the board would you like to move? ', player)
+
+        if unit not in player.units_on_board:
+            print('You do not have this unit on board.')
+            return
 
         from_row, from_col = list(map(int, input('From position (row, col): ').split(',')))  # ToDo: check if valid
-        to_row, to_col = list(map(int, input('To position (row, col): ').split(',')))  # ToDo: check if valid and orthogonal
+        to_row, to_col = list(map(int, input('To position (row, col): ').split(',')))
+        # ToDo: check if valid and orthogonal
 
         board.board[from_row][from_col] = '.'
         board.board[to_row][to_col] = unit[0]
-
         player.hand.remove(unit)
         player.discarded_units.append(unit)
 
     @staticmethod
     def recruit(player: Player):
-        unit = input('Which unit would you like to discard from your hand to recruit the same kind? ')
-        while unit not in Action.UNIT_TYPES or unit not in player.hand:
-            unit = input('Invalid unit. Which unit would you like to discard from your hand to recruit the same kind? ')
+        unit = Action.__prompt_user_for_unit_name(
+            'Which unit would you like to discard from your hand to recruit the same kind? ', player)
 
         if player.recruitment_pieces[unit] <= 0:
             print(f'You don\'t have more units of type {unit} to recruit.')
@@ -78,14 +73,17 @@ class Action:
 
     @staticmethod
     def attack(player: Player, opponent: Player, board: Board):
-        unit = input('Which unit from your hand and on the board would you like to use for attack? ')
-        while unit not in Action.UNIT_TYPES or unit not in player.hand \
-                or unit not in player.units_on_board:
-            unit = input('Invalid unit. Which unit from your hand and on the board would you like to use for attack? ')
+        unit = Action.__prompt_user_for_unit_name(
+            'Which unit from your hand and on the board would you like to use for attack? ', player)
+        if unit not in player.units_on_board:
+            print('You do not have this unit on board.')
+            return
 
-        unit_to_attack = input('Which opponent\'s unit on the board would you like to attack? ')
-        while unit_to_attack not in Action.UNIT_TYPES or unit_to_attack not in opponent.units_on_board:
-            unit_to_attack = input('Invalid unit. Which opponent\'s unit on the board would you like to attack? ')
+        unit_to_attack = Action.__prompt_user_for_unit_name(
+            'Which opponent\'s unit on the board would you like to attack? ', opponent)
+        if unit_to_attack not in opponent.units_on_board:
+            print('Your opponent does not have this unit on board.')
+            return
 
         row, col = list(map(int, input(f'Which position would you like {unit} to attack (row,col)? ').split(',')))
         # ToDo: check if position is valid (Orthogonally adjacent to control zone and in bounds, unit specific)
@@ -102,9 +100,7 @@ class Action:
 
     @staticmethod
     def initiative(player: Player):
-        unit = input('Which unit would you like to discard from your hand? ')
-        while unit not in Action.UNIT_TYPES or unit not in player.hand:
-            unit = input('Invalid unit. Which unit would you like to discard from your hand? ')
+        unit = Action.__prompt_user_for_unit_name('Which unit would you like to discard from your hand? ', player)
 
         player.hand.remove(unit)
         player.discarded_units.append(unit)
@@ -119,3 +115,15 @@ class Action:
         player.bag.remove(unit)
         player.discarded_units.remove(unit)
         player.hand.remove(unit)
+
+    @staticmethod
+    def __is_unit_valid(unit, player):
+        return unit in Action.UNIT_TYPES and unit in player.hand
+
+    @staticmethod
+    def __prompt_user_for_unit_name(message, player):
+        unit = input(message)
+        while not (Action.__is_unit_valid(unit, player)):
+            unit = input('Invalid unit.' + message)
+
+        return unit

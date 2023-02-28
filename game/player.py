@@ -87,7 +87,6 @@ class Player:
 
     def __repr__(self):
         return f'======== {self.name.upper()} ========\n' \
-               f'Bag: {", ".join(self.bag)}\n' \
                f'Hand: {", ".join(self.hand)}\n' \
                f'Recruitment pieces: {", ".join([f"{k} = {v}" for k, v in self.recruitment_pieces.items()])}\n' \
                f'Discard pile: {", ".join(self.discarded_units)}\n' \

@@ -52,8 +52,9 @@ class Game:
         while True:
 
             player = turns[0]
-            Game.__randomly_generate_hand(turns[0])
-            Game.__randomly_generate_hand(turns[1])
+            opponent = turns[1]
+            Game.__randomly_generate_hand(player)
+            Game.__randomly_generate_hand(opponent)
             print(player)
 
             for _ in range(Game.ACTION_COUNT):
@@ -64,10 +65,14 @@ class Game:
 
                 if action in ('place', 'move'):
                     Game.ACTIONS[action](player, board)
+                elif action == 'control':
+                    Game.ACTIONS[action](player, opponent, board)
                 else:
                     Game.ACTIONS[action](player)
 
-            print(board)
+                Game.__check_if_player_wins(player, opponent)
+                print(board)
+                print(f'Hand: {", ".join(player.hand)}')
 
             if not player.initiative:
                 turns.append(turns.popleft())
@@ -113,6 +118,14 @@ class Game:
             else:
                 [player2.bag.append(Game.UNIT_TYPES[i]) for _ in range(Player.UNIT_COUNT)]
                 player2.recruitment_pieces[Game.UNIT_TYPES[i]] = 4
+
+    @staticmethod
+    def __check_if_player_wins(player, opponent):
+        if player.control_tokens == 0 or \
+                (not opponent.bag and not opponent.hand
+                 and not opponent.units_on_board and not opponent.recruitment_pieces):
+            print(f'{player.name} IS THE WINNER!!!')
+            exit()
 
 
 if __name__ == '__main__':

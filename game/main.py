@@ -4,67 +4,12 @@ import random
 from board import Board
 from player import Player
 from action import Action
+from unit import Unit
 
 
-def setup():
-    # Setup
-    UNIT_TYPES = ("Archer", "Berserker", "Cavalry", "Crossbowman")
-
-    crow_player = Player("Crow")
-    crow_player.control_zones.append([0, 2])
-    wolf_player = Player("Wolf")
-    wolf_player.control_zones.append([4, 2])
-
-    game_board = Board()
-    game_board.mark_control_zone(crow_player)
-    game_board.mark_control_zone(wolf_player)
-    game_board.mark_free_zones()
-
-    print(game_board)
-
-    # Randomly choose a player
-    turns = collections.deque()
-    current_player = random.choice([crow_player, wolf_player])
-    if current_player == crow_player:
-        turns.append(crow_player)
-        turns.append(wolf_player)
-    else:
-        turns.append(wolf_player)
-        turns.append(crow_player)
-
-    # Randomly distribute unit types in bag
-    random_sample = random.sample(range(0, 4), 2)
-    for i in range(len(UNIT_TYPES)):
-        if i in random_sample:
-            [crow_player.bag.append(UNIT_TYPES[i]) for _ in range(2)]
-            crow_player.recruitment_pieces[UNIT_TYPES[i]] = 4  #ToDo: find where this number comes from
-        else:
-            [wolf_player.bag.append(UNIT_TYPES[i]) for _ in range(2)]
-            wolf_player.recruitment_pieces[UNIT_TYPES[i]] = 4
-
-    # Randomly distribute unit types in hand
-    random_sample = random.sample(range(len(crow_player.bag)), 3)
-    for i in random_sample:
-        crow_player.hand.append(crow_player.bag[i])
-        wolf_player.hand.append(wolf_player.bag[i])
-
-    print(current_player)
-    return turns
-
-
-def start_game():
-    user_input = input('Start game (y/n): ')
-    while user_input not in ('y', 'n'):
-        user_input = input('Start game (y/n): ')
-
-    if user_input.lower() == 'n':
-        exit()
-
-    turns = setup()
-    player = turns[0]
-    is_order_changed = False
-
-    UNIT_TYPES = ("Archer", "Berserker", "Cavalry", "Crossbowman")
+class Game:
+    UNIT_TYPES = ()
+    UNIT_COUNT = 4
     ACTIONS = {
         'place': Action.place,
         'control': Action.control,
@@ -73,21 +18,123 @@ def start_game():
         'attack': Action.attack,
         'initiative': Action.initiative,
     }
+    ACTION_COUNT = 3
+    HAND_UNIT_COUNT = 3
 
-    while True:
-        action = input('Choose an action (place, control, move, recruit, attack, initiative): ')
-        while action not in ACTIONS:
-            action = input('Choose an action (place, control, move, recruit, attack, initiative): ')
+    def setup(self):
+        # Create players
+        crow_player = Player('Crow')
+        crow_player.control_zones.append([0, 2])
+        wolf_player = Player('Wolf')
+        wolf_player.control_zones.append([4, 2])
 
-        ACTIONS[action](player)
+        # Create board
+        board = Board()
+        board.mark_control_zone(crow_player)
+        board.mark_control_zone(wolf_player)
+        board.mark_free_zones()
+        print(board)
 
-        if action == 'initiative':
-            is_order_changed = True
-        if not is_order_changed:
-            turns.append(turns.popleft())
+        # Create 4 units
+        Game.UNIT_TYPES = (Unit(name='Knight', count=5, attack_space=1, move_space=1),
+                           Unit(name='Crossbowman', count=5, attack_space=2, move_space=1),
+                           Unit(name='Mercenary', count=5, attack_space=1, move_space=1),
+                           Unit(name='Archer', count=4, attack_space=2, move_space=1))
+
+        # Randomly choose a player
+        turns = Game.__randomly_choose_player(crow_player, wolf_player)
+
+        # Randomly distribute unit types in bags
+        Game.__randomly_generate_bags(crow_player, wolf_player)
+
+        return turns, board
+
+    def start_game(self, turns, board):
+        user_input = input('Start game (y/n): ')
+        while user_input not in ('y', 'n'):
+            user_input = input('Start game (y/n): ')
+        if user_input.lower() == 'n':
+            exit()
+
+        while True:
             player = turns[0]
-            is_order_changed = False
+            opponent = turns[1]
+            Game.__randomly_generate_hand(player)
+            Game.__randomly_generate_hand(opponent)
+            print(player)
+
+            for _ in range(Game.ACTION_COUNT):
+
+                action = input('Choose an action (place, control, move, recruit, attack, initiative): ')
+                while action not in Game.ACTIONS:
+                    action = input('Choose an action (place, control, move, recruit, attack, initiative): ')
+
+                if action in ('place', 'move'):
+                    Game.ACTIONS[action](player, board)
+                elif action == 'control':
+                    Game.ACTIONS[action](player, opponent, board)
+                else:
+                    Game.ACTIONS[action](player)
+
+                Game.__check_if_player_wins(player, opponent)
+                print(board)
+                print(f'Hand: {", ".join(player.hand)}')
+
+            if not player.initiative:
+                turns.append(turns.popleft())
+            else:
+                player.initiative = False
+
+    @staticmethod
+    def __randomly_generate_hand(player):
+        if not player.bag:
+            Game.__fill_player_bag(player)
+
+        random_sample = random.sample(range(Player.BAG_SIZE), Game.HAND_UNIT_COUNT)
+        for i in random_sample:
+            player.hand.append(player.bag[i])
+
+    @staticmethod
+    def __fill_player_bag(player):
+        player.bag = player.discarded_units
+        player.discarded_units = []
+
+    @staticmethod
+    def __randomly_choose_player(player1, player2):
+        turns = collections.deque()
+        current_player = random.choice([player1, player2])
+
+        if current_player == player1:
+            turns.append(player1)
+            turns.append(player2)
+        else:
+            turns.append(player2)
+            turns.append(player1)
+
+        return turns
+
+    @staticmethod
+    def __randomly_generate_bags(player1, player2):
+        random_sample = random.sample(range(Game.UNIT_COUNT), Player.UNIT_COUNT)
+
+        for i in range(len(Game.UNIT_TYPES)):
+            if i in random_sample:
+                [player1.bag.append(Game.UNIT_TYPES[i].name) for _ in range(Player.UNIT_COUNT)]
+                player1.recruitment_pieces[Game.UNIT_TYPES[i].name] = Game.UNIT_TYPES[i].count - 2
+            else:
+                [player2.bag.append(Game.UNIT_TYPES[i].name) for _ in range(Player.UNIT_COUNT)]
+                player2.recruitment_pieces[Game.UNIT_TYPES[i].name] = Game.UNIT_TYPES[i].count - 2
+
+    @staticmethod
+    def __check_if_player_wins(player, opponent):
+        if player.control_tokens == 0 or \
+                (not opponent.bag and not opponent.hand
+                 and not opponent.units_on_board and not opponent.recruitment_pieces):
+            print(f'{player.name} IS THE WINNER!!!')
+            exit()
 
 
 if __name__ == '__main__':
-    start_game()
+    game = Game()
+    turns, board = game.setup()
+    game.start_game(turns, board)

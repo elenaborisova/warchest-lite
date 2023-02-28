@@ -1,4 +1,6 @@
 class Player:
+    BAG_SIZE = 4
+    UNIT_COUNT = 2
 
     def __init__(self, name):
         self._name = name
@@ -7,7 +9,9 @@ class Player:
         self._hand = []
         self._recruitment_pieces = {}
         self._discarded_units = []
-        self._control_tokens = 3  # Need to control 3 more in order to win
+        self._control_tokens = 3
+        self._units_on_board = set()
+        self._initiative = False
 
     @property
     def name(self):
@@ -65,9 +69,24 @@ class Player:
     def control_tokens(self, value):
         self._control_tokens = value
 
+    @property
+    def units_on_board(self):
+        return self._units_on_board
+
+    @units_on_board.setter
+    def units_on_board(self, value):
+        self._units_on_board = value
+
+    @property
+    def initiative(self):
+        return self._initiative
+
+    @initiative.setter
+    def initiative(self, value):
+        self._initiative = value
+
     def __repr__(self):
         return f'======== {self.name.upper()} ========\n' \
-               f'Bag: {", ".join(self.bag)}\n' \
                f'Hand: {", ".join(self.hand)}\n' \
                f'Recruitment pieces: {", ".join([f"{k} = {v}" for k, v in self.recruitment_pieces.items()])}\n' \
                f'Discard pile: {", ".join(self.discarded_units)}\n' \

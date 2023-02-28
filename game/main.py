@@ -1,10 +1,10 @@
 import collections
 import random
 
-from board import Board
-from player import Player
-from action import Action
-from unit import Unit
+from game.board import Board
+from game.player import Player
+from game.action import Action
+from game.unit import Unit
 
 
 class Game:
@@ -60,7 +60,6 @@ class Game:
             player = turns[0]
             opponent = turns[1]
             Game.__randomly_generate_hand(player)
-            Game.__randomly_generate_hand(opponent)
             print(player)
 
             for _ in range(Game.ACTION_COUNT):
@@ -71,7 +70,7 @@ class Game:
 
                 if action in ('place', 'move'):
                     Game.ACTIONS[action](player, board)
-                elif action == 'control':
+                elif action in ('control', 'attack'):
                     Game.ACTIONS[action](player, opponent, board)
                 else:
                     Game.ACTIONS[action](player)
@@ -87,16 +86,17 @@ class Game:
 
     @staticmethod
     def __randomly_generate_hand(player):
-        if not player.bag:
+        if len(player.bag) < Game.HAND_UNIT_COUNT:
             Game.__fill_player_bag(player)
 
-        random_sample = random.sample(range(Player.BAG_SIZE), Game.HAND_UNIT_COUNT)
-        for i in random_sample:
-            player.hand.append(player.bag[i])
+        random_sample = random.sample(player.bag, Game.HAND_UNIT_COUNT)
+        for unit in random_sample:
+            player.hand.append(unit)
+            player.bag.remove(unit)
 
     @staticmethod
     def __fill_player_bag(player):
-        player.bag = player.discarded_units
+        player.bag.extend(player.discarded_units)
         player.discarded_units = []
 
     @staticmethod

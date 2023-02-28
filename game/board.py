@@ -1,6 +1,3 @@
-from player import Player
-
-
 class Board:
     SIZE = 5
     FREE_ZONE_SYMBOL = '@'
@@ -17,7 +14,7 @@ class Board:
     def board(self, value):
         self._board = value
 
-    def mark_control_zone(self, player: Player):
+    def mark_control_zone(self, player):
         for zone in player.control_zones:
             self.board[zone[0]][zone[1]] = player.name[0]
 

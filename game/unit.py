@@ -1,9 +1,9 @@
 class Unit:
     def __init__(self, name, count, attack_space, move_space):
-        self._name = name
-        self._count = count
-        self._attack_space = attack_space
-        self._move_space = move_space
+        self.name = name
+        self.count = count
+        self.attack_space = attack_space
+        self.move_space = move_space
 
     @property
     def name(self):
@@ -19,7 +19,8 @@ class Unit:
 
     @count.setter
     def count(self, value):
-        self._count = value
+        if value < 0:
+            raise ValueError('Count should be greater or equal to 0.')
 
     @property
     def attack_space(self):
@@ -27,7 +28,8 @@ class Unit:
 
     @attack_space.setter
     def attack_space(self, value):
-        self._attack_space = value
+        if value < 0:
+            raise ValueError('Attack space should be greater or equal to 0.')
 
     @property
     def move_space(self):
@@ -35,7 +37,8 @@ class Unit:
 
     @move_space.setter
     def move_space(self, value):
-        self._move_space = value
+        if value < 0:
+            raise ValueError('Move space should be greater or equal to 0.')
 
     def __repr__(self):
         return self.name

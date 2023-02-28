@@ -44,12 +44,16 @@ class Action:
         while unit not in Action.UNIT_TYPES or unit not in player.hand:
             unit = input('Invalid unit. Which unit would you like to discard from your hand to recruit the same kind? ')
 
+        if player.recruitment_pieces[unit] <= 0:
+            print(f'You don\'t have more units of type {unit} to recruit.')
+            return
+
         player.hand.remove(unit)
-        player.bag.append(unit)
         player.discarded_units.append(unit)
+        player.bag.append(unit)
         player.recruitment_pieces[unit] -= 1
 
-        print(f'{unit} discarded from hand and added to bag.\n')
+        print(f'{unit} successfully discarded from hand and added to bag!\n')
 
     @staticmethod
     def attack(player: Player):
@@ -63,6 +67,6 @@ class Action:
 
         player.hand.remove(unit)
         player.discarded_units.append(unit)
+        player.initiative = True
 
-        print(f'{unit} discarded from hand.\n')
-
+        print(f'{unit} successfully discarded from hand! You have the initiative for next round!\n')

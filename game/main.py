@@ -4,10 +4,11 @@ import random
 from board import Board
 from player import Player
 from action import Action
+from unit import Unit
 
 
 class Game:
-    UNIT_TYPES = ("Archer", "Berserker", "Cavalry", "Knight")
+    UNIT_TYPES = ()
     UNIT_COUNT = 4
     ACTIONS = {
         'place': Action.place,
@@ -22,9 +23,9 @@ class Game:
 
     def setup(self):
         # Create players
-        crow_player = Player("Crow")
+        crow_player = Player('Crow')
         crow_player.control_zones.append([0, 2])
-        wolf_player = Player("Wolf")
+        wolf_player = Player('Wolf')
         wolf_player.control_zones.append([4, 2])
 
         # Create board
@@ -33,6 +34,12 @@ class Game:
         board.mark_control_zone(wolf_player)
         board.mark_free_zones()
         print(board)
+
+        # Create 4 units
+        Game.UNIT_TYPES = (Unit(name='Knight', count=5, attack_space=1, move_space=1),
+                           Unit(name='Crossbowman', count=5, attack_space=2, move_space=1),
+                           Unit(name='Mercenary', count=5, attack_space=1, move_space=1),
+                           Unit(name='Archer', count=4, attack_space=2, move_space=1))
 
         # Randomly choose a player
         turns = Game.__randomly_choose_player(crow_player, wolf_player)
@@ -50,7 +57,6 @@ class Game:
             exit()
 
         while True:
-
             player = turns[0]
             opponent = turns[1]
             Game.__randomly_generate_hand(player)
@@ -113,11 +119,11 @@ class Game:
 
         for i in range(len(Game.UNIT_TYPES)):
             if i in random_sample:
-                [player1.bag.append(Game.UNIT_TYPES[i]) for _ in range(Player.UNIT_COUNT)]
-                player1.recruitment_pieces[Game.UNIT_TYPES[i]] = 4  # ToDo: find where this number comes from
+                [player1.bag.append(Game.UNIT_TYPES[i].name) for _ in range(Player.UNIT_COUNT)]
+                player1.recruitment_pieces[Game.UNIT_TYPES[i].name] = Game.UNIT_TYPES[i].count - 2
             else:
-                [player2.bag.append(Game.UNIT_TYPES[i]) for _ in range(Player.UNIT_COUNT)]
-                player2.recruitment_pieces[Game.UNIT_TYPES[i]] = 4
+                [player2.bag.append(Game.UNIT_TYPES[i].name) for _ in range(Player.UNIT_COUNT)]
+                player2.recruitment_pieces[Game.UNIT_TYPES[i].name] = Game.UNIT_TYPES[i].count - 2
 
     @staticmethod
     def __check_if_player_wins(player, opponent):

@@ -7,7 +7,8 @@ class Player:
         self._hand = []
         self._recruitment_pieces = {}
         self._discarded_units = []
-        self._control_tokens = 3  # Need to control 3 more in order to win
+        self._control_tokens = 3
+        self._units_on_board = set()
 
     @property
     def name(self):
@@ -64,6 +65,14 @@ class Player:
     @control_tokens.setter
     def control_tokens(self, value):
         self._control_tokens = value
+
+    @property
+    def units_on_board(self):
+        return self._units_on_board
+
+    @units_on_board.setter
+    def units_on_board(self, value):
+        self._units_on_board = value
 
     def __repr__(self):
         return f'======== {self.name.upper()} ========\n' \

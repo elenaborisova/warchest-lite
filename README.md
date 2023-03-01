@@ -177,11 +177,11 @@ The game continues until one player wins.
 
 ## Requirements checklist
 
-- README in English [ ]
-- Minimum 4 unit types [ ]
-- Actions implemented: initiative, move, attack (+deletion), recruit, place [ ]
-- Winning conditions [ ]
-- GitHub repo with PRs [ ]
-- Unit tests [ ]
-- Object Oriented Design [ ]
-- Documentation [ ]
+- [ ] README in English
+- [ ] Minimum 4 unit types
+- [ ] Actions implemented: initiative, move, attack (+deletion), recruit, place
+- [ ] Winning conditions
+- [ ] GitHub repo with PRs
+- [ ] Unit tests
+- [ ] Object Oriented Design
+- [ ] Documentation

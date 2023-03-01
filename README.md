@@ -185,3 +185,4 @@ The game continues until one player wins.
 - [ ] Unit tests
 - [ ] Object Oriented Design
 - [ ] Documentation
+- [ ] Create SQLite database with player data

@@ -1,7 +1,7 @@
 ## Warchest Lite :rocket:
 
 A console game as a simplified version of the board game _Warchest Lite_
-> Creator: @elenaborisova :girl:
+> Creator: @elenaborisova :girl:  
 > Language: Python :snake:
 
 ## Rules of the game
@@ -177,11 +177,11 @@ The game continues until one player wins.
 
 ## Requirements checklist
 
-- README in English
-- Minimum 4 unit types
-- Actions implemented: initiative, move, attack (+deletion), recruit, place
-- Winning conditions
-- GitHub repo with PRs
-- Unit tests
-- Object Oriented Design
-- Documentation
+- README in English [ ]
+- Minimum 4 unit types [ ]
+- Actions implemented: initiative, move, attack (+deletion), recruit, place [ ]
+- Winning conditions [ ]
+- GitHub repo with PRs [ ]
+- Unit tests [ ]
+- Object Oriented Design [ ]
+- Documentation [ ]

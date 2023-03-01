@@ -26,16 +26,78 @@ class ActionTest(unittest.TestCase):
         self.assertEqual(unit_types, Action.UNIT_TYPES)
 
     @mock.patch('builtins.input')
+    def test_actionControl_whenValidUserInputAndFreeZone_shouldControlZone(self, mocked_input):
+        unit = ActionTest.player.hand[0]
+        position_to_control = '1,2'
+        mocked_input.side_effect = [unit, position_to_control]
+
+        Action.control(ActionTest.player, ActionTest.opponent, ActionTest.board)
+
+        self.assertEqual(len(ActionTest.player.hand), 2)
+        self.assertEqual(len(ActionTest.player.discarded_units), 1)
+        self.assertEqual(ActionTest.board.board[1][2], unit[0])
+        self.assertEqual(ActionTest.player.control_tokens, 2)
+        self.assertEqual(ActionTest.player.control_zones[1], [1, 2])
+        self.assertEqual(len(ActionTest.player.units_on_board), 1)
+
+    @mock.patch('builtins.input')
+    def test_actionControl_whenValidUserInputAndOpponentZone_shouldControlZone(self, mocked_input):
+        unit = ActionTest.player.hand[0]
+        position_to_control = '4,2'
+        mocked_input.side_effect = [unit, position_to_control]
+
+        Action.control(ActionTest.player, ActionTest.opponent, ActionTest.board)
+
+        self.assertEqual(len(ActionTest.player.hand), 2)
+        self.assertEqual(len(ActionTest.player.discarded_units), 1)
+        self.assertEqual(ActionTest.board.board[4][2], unit[0])
+        self.assertEqual(ActionTest.player.control_tokens, 2)
+        self.assertEqual(ActionTest.player.control_zones[1], [4, 2])
+        self.assertEqual(len(ActionTest.player.units_on_board), 1)
+
+    @mock.patch('builtins.input')
+    def test_actionControl_whenInvalidZone_shouldReturnNone(self, mocked_input):
+        unit = ActionTest.player.hand[0]
+        position_to_control = '4,3'
+        mocked_input.side_effect = [unit, position_to_control]
+
+        res = Action.control(ActionTest.player, ActionTest.opponent, ActionTest.board)
+
+        self.assertIsNone(res)
+
+    @mock.patch('builtins.input')
+    def test_actionControl_whenOwnControlZone_shouldReturnNone(self, mocked_input):
+        unit = ActionTest.player.hand[0]
+        position_to_control = '0,2'
+        mocked_input.side_effect = [unit, position_to_control]
+
+        res = Action.control(ActionTest.player, ActionTest.opponent, ActionTest.board)
+
+        self.assertIsNone(res)
+
+    @mock.patch('builtins.input')
     def test_actionPlace_whenValidUserInput_shouldPlaceUnitOnBoard(self, mocked_input):
         unit_to_place = ActionTest.player.hand[0]
-        position_to_place = '4,0'
+        ActionTest.player.control_zones.append([2, 2])
+        position_to_place = '2,1'
         mocked_input.side_effect = [unit_to_place, position_to_place]
 
         Action.place(ActionTest.player, ActionTest.board)
 
-        self.assertEqual(ActionTest.board.board[4][0], unit_to_place[0])
+        self.assertEqual(ActionTest.board.board[2][1], unit_to_place[0])
         self.assertEqual(len(ActionTest.player.hand), 2)
         self.assertEqual(len(ActionTest.player.units_on_board), 1)
+
+    @mock.patch('builtins.input')
+    def test_actionPlace_whenNonAdjacent_shouldReturnNone(self, mocked_input):
+        unit_to_place = ActionTest.player.hand[0]
+        ActionTest.player.control_zones.append([2, 2])
+        position_to_place = '0,0'
+        mocked_input.side_effect = [unit_to_place, position_to_place]
+
+        res = Action.place(ActionTest.player, ActionTest.board)
+
+        self.assertIsNone(res)
 
     @mock.patch('builtins.input')
     def test_actionPlace_whenNoControlZones_shouldReturnNone(self, mocked_input):
@@ -45,6 +107,162 @@ class ActionTest(unittest.TestCase):
         ActionTest.player.control_zones = []
 
         res = Action.place(ActionTest.player, ActionTest.board)
+
+        self.assertIsNone(res)
+
+    @mock.patch('builtins.input')
+    def test_actionMove_whenValidUserInput_shouldMoveUnitOnBoard(self, mocked_input):
+        unit = ActionTest.player.hand[0]
+        ActionTest.player.units_on_board.add(unit)
+        ActionTest.board.board[0][0] = unit[0]
+        from_position = '0,0'
+        to_position = '0,1'
+        mocked_input.side_effect = [unit, from_position, to_position]
+
+        Action.move(ActionTest.player, ActionTest.board)
+
+        self.assertEqual(ActionTest.board.board[0][0], '.')
+        self.assertEqual(ActionTest.board.board[0][1], unit[0])
+        self.assertEqual(len(ActionTest.player.hand), 2)
+        self.assertEqual(len(ActionTest.player.discarded_units), 1)
+
+    @mock.patch('builtins.input')
+    def test_actionMove_whenUnitNotOnBoard_shouldReturnNone(self, mocked_input):
+        unit = ActionTest.player.hand[0]
+        ActionTest.board.board[0][0] = unit[0]
+        from_position = '0,0'
+        to_position = '0,1'
+        mocked_input.side_effect = [unit, from_position, to_position]
+
+        res = Action.move(ActionTest.player, ActionTest.board)
+
+        self.assertIsNone(res)
+
+    @mock.patch('builtins.input')
+    def test_actionMove_whenUnitNotOnPosition_shouldReturnNone(self, mocked_input):
+        unit = ActionTest.player.hand[0]
+        ActionTest.player.units_on_board.add(unit)
+        from_position = '0,0'
+        to_position = '0,1'
+        mocked_input.side_effect = [unit, from_position, to_position]
+
+        res = Action.move(ActionTest.player, ActionTest.board)
+
+        self.assertIsNone(res)
+
+    @mock.patch('builtins.input')
+    def test_actionMove_whenPosNonAdjacent_shouldReturnNone(self, mocked_input):
+        unit = ActionTest.player.hand[0]
+        ActionTest.player.units_on_board.add(unit)
+        ActionTest.board.board[0][0] = unit[0]
+        from_position = '0,0'
+        to_position = '0,3'
+        mocked_input.side_effect = [unit, from_position, to_position]
+
+        res = Action.move(ActionTest.player, ActionTest.board)
+
+        self.assertIsNone(res)
+
+    @mock.patch('builtins.input')
+    def test_actionAttack_whenValidUserInput_shouldAttackOpponent(self, mocked_input):
+        unit = ActionTest.player.hand[0]
+        ActionTest.player.units_on_board.add(unit)
+        ActionTest.board.board[0][0] = unit[0]
+        unit_to_attack = ActionTest.opponent.hand[0]
+        ActionTest.opponent.units_on_board.add(unit_to_attack)
+        ActionTest.board.board[0][1] = unit_to_attack[0]
+        from_position = '0,0'
+        to_position = '0,1'
+        mocked_input.side_effect = [unit, unit_to_attack, from_position, to_position]
+
+        Action.attack(ActionTest.player, ActionTest.opponent, ActionTest.board)
+
+        self.assertEqual(ActionTest.board.board[0][0], '.')
+        self.assertEqual(ActionTest.board.board[0][1], unit[0])
+        self.assertEqual(len(ActionTest.player.hand), 2)
+        self.assertEqual(len(ActionTest.player.discarded_units), 1)
+
+        self.assertNotIn(unit_to_attack, ActionTest.opponent.bag)
+        self.assertNotIn(unit_to_attack, ActionTest.opponent.hand)
+        self.assertNotIn(unit_to_attack, ActionTest.opponent.recruitment_pieces)
+        self.assertNotIn(unit_to_attack, ActionTest.opponent.discarded_units)
+        self.assertNotIn(unit_to_attack, ActionTest.opponent.units_on_board)
+
+    @mock.patch('builtins.input')
+    def test_actionAttack_whenUnitNotOnBoard_shouldReturnNone(self, mocked_input):
+        unit = ActionTest.player.hand[0]
+        ActionTest.board.board[0][0] = unit[0]
+        unit_to_attack = ActionTest.opponent.hand[0]
+        ActionTest.opponent.units_on_board.add(unit_to_attack)
+        ActionTest.board.board[0][1] = unit_to_attack[0]
+        from_position = '0,0'
+        to_position = '0,1'
+        mocked_input.side_effect = [unit, unit_to_attack, from_position, to_position]
+
+        res = Action.attack(ActionTest.player, ActionTest.opponent, ActionTest.board)
+
+        self.assertIsNone(res)
+
+    @mock.patch('builtins.input')
+    def test_actionAttack_whenAttackUnitNotOnBoard_shouldReturnNone(self, mocked_input):
+        unit = ActionTest.player.hand[0]
+        ActionTest.player.units_on_board.add(unit)
+        ActionTest.board.board[0][0] = unit[0]
+        unit_to_attack = ActionTest.opponent.hand[0]
+        ActionTest.board.board[0][1] = unit_to_attack[0]
+        from_position = '0,0'
+        to_position = '0,1'
+        mocked_input.side_effect = [unit, unit_to_attack, from_position, to_position]
+
+        res = Action.attack(ActionTest.player, ActionTest.opponent, ActionTest.board)
+
+        self.assertIsNone(res)
+
+    @mock.patch('builtins.input')
+    def test_actionAttack_whenInvalidFromPosition_shouldReturnNone(self, mocked_input):
+        unit = ActionTest.player.hand[0]
+        ActionTest.player.units_on_board.add(unit)
+        ActionTest.board.board[0][0] = unit[0]
+        unit_to_attack = ActionTest.opponent.hand[0]
+        ActionTest.opponent.units_on_board.add(unit_to_attack)
+        ActionTest.board.board[0][1] = unit_to_attack[0]
+        from_position = '2,2'
+        to_position = '0,1'
+        mocked_input.side_effect = [unit, unit_to_attack, from_position, to_position]
+
+        res = Action.attack(ActionTest.player, ActionTest.opponent, ActionTest.board)
+
+        self.assertIsNone(res)
+
+    @mock.patch('builtins.input')
+    def test_actionAttack_whenInvalidToPosition_shouldReturnNone(self, mocked_input):
+        unit = ActionTest.player.hand[0]
+        ActionTest.player.units_on_board.add(unit)
+        ActionTest.board.board[0][0] = unit[0]
+        unit_to_attack = ActionTest.opponent.hand[0]
+        ActionTest.opponent.units_on_board.add(unit_to_attack)
+        ActionTest.board.board[0][1] = unit_to_attack[0]
+        from_position = '0,0'
+        to_position = '1,0'
+        mocked_input.side_effect = [unit, unit_to_attack, from_position, to_position]
+
+        res = Action.attack(ActionTest.player, ActionTest.opponent, ActionTest.board)
+
+        self.assertIsNone(res)
+
+    @mock.patch('builtins.input')
+    def test_actionAttack_whenNonAdjacentPosition_shouldReturnNone(self, mocked_input):
+        unit = ActionTest.player.hand[0]
+        ActionTest.player.units_on_board.add(unit)
+        ActionTest.board.board[0][0] = unit[0]
+        unit_to_attack = ActionTest.opponent.hand[0]
+        ActionTest.opponent.units_on_board.add(unit_to_attack)
+        ActionTest.board.board[0][1] = unit_to_attack[0]
+        from_position = '0,0'
+        to_position = '0,3'
+        mocked_input.side_effect = [unit, unit_to_attack, from_position, to_position]
+
+        res = Action.attack(ActionTest.player, ActionTest.opponent, ActionTest.board)
 
         self.assertIsNone(res)
 
@@ -127,17 +345,38 @@ class ActionTest(unittest.TestCase):
         mocked_input.side_effect = [unit]
         message = 'Test message'
 
-        res = Action()._Action__prompt_user_for_unit_name(message, (), ActionTest.player)
+        res = Action()._Action__prompt_user_for_unit_name(message, ActionTest.player)
 
         self.assertEqual(res, unit)
 
     @mock.patch('builtins.input')
-    def test_promptUserForUnitName_whenInvalid_shouldReturnUnitName(self, mocked_input):
+    def test_promptUserForUnitName_whenInvalid_shouldRepeatAndReturnUnitName(self, mocked_input):
         invalid_unit = 'Invalid unit name'
         unit = ActionTest.player.hand[0]
         mocked_input.side_effect = [invalid_unit, unit]
         message = 'Test message'
 
-        res = Action()._Action__prompt_user_for_unit_name(message, (), ActionTest.player)
+        res = Action()._Action__prompt_user_for_unit_name(message, ActionTest.player)
 
         self.assertEqual(res, unit)
+
+    @mock.patch('builtins.input')
+    def test_promptUserForPosition_whenValid_shouldReturnPosition(self, mocked_input):
+        position = '4,0'
+        mocked_input.side_effect = [position]
+        message = 'Test message'
+
+        res = Action()._Action__prompt_user_for_position(message, ActionTest.board)
+
+        self.assertEqual(res, (4, 0))
+
+    @mock.patch('builtins.input')
+    def test_promptUserForPosition_whenInvalid_shouldRepeatAndReturnPosition(self, mocked_input):
+        invalid_position = '12,0'
+        position = '4,0'
+        mocked_input.side_effect = [invalid_position, position]
+        message = 'Test message'
+
+        res = Action()._Action__prompt_user_for_position(message, ActionTest.board)
+
+        self.assertEqual(res, (4, 0))

@@ -101,17 +101,7 @@ class Game:
 
     @staticmethod
     def __randomly_choose_player(player1, player2):
-        turns = collections.deque()
-        current_player = random.choice([player1, player2])
-
-        if current_player == player1:
-            turns.append(player1)
-            turns.append(player2)
-        else:
-            turns.append(player2)
-            turns.append(player1)
-
-        return turns
+        return collections.deque(random.sample([player1, player2], 2))
 
     @staticmethod
     def __randomly_generate_bags(player1, player2):

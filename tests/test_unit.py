@@ -1,5 +1,7 @@
 import unittest
+
 from game.unit import Unit
+from game.player import Player
 
 
 class UnitTypeTest(unittest.TestCase):
@@ -55,3 +57,20 @@ class UnitTypeTest(unittest.TestCase):
         unit = Unit(name, count, attack_space, move_space)
 
         self.assertEqual(name, str(unit))
+
+    def test_unitCanBePlacedAtPos_whenValidPos_shouldBePlaced(self):
+        player = Player('Test player')
+        player.control_zones.append([2, 2])
+
+        self.assertTrue(Unit.can_move_to_pos(player.control_zones, [1, 2]))
+        self.assertTrue(Unit.can_move_to_pos(player.control_zones, [3, 2]))
+        self.assertTrue(Unit.can_move_to_pos(player.control_zones, [2, 1]))
+        self.assertTrue(Unit.can_move_to_pos(player.control_zones, [2, 3]))
+
+    def test_unitCanBePlacedAtPos_whenInvalidPos_shouldBePlaced(self):
+        player = Player('Test player')
+        player.control_zones.append([0, 0])
+
+        self.assertFalse(Unit.can_move_to_pos(player.control_zones, [0, 0]))
+        self.assertFalse(Unit.can_move_to_pos(player.control_zones, [0, 2]))
+        self.assertFalse(Unit.can_move_to_pos(player.control_zones, [0, 10]))

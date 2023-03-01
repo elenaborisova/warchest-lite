@@ -1,6 +1,8 @@
 import collections
 import random
 
+import sqlite3
+
 from game.board import Board
 from game.player import Player
 from game.action import Action
@@ -22,6 +24,16 @@ class Game:
     HAND_UNIT_COUNT = 3
 
     def setup(self):
+        # Connect to DB
+        conn = sqlite3.connect('identifier.sqlite')
+        cursor = conn.cursor()
+        cursor.execute("SELECT name, win_count date FROM players ORDER BY date DESC")
+        record = cursor.fetchall()
+        print('Player win statistics:')
+        [print(' -> '.join(map(str, r))) for r in record]
+        print()
+        cursor.close()
+
         # Create players
         crow_player = Player('Crow')
         crow_player.control_zones.append([0, 2])
